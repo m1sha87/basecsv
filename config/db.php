@@ -3,7 +3,7 @@
 return [
     'class' => 'yii\db\Connection',
     'dsn' => 'mysql:host=localhost;dbname=basecsv',
-    'username' => 'baescsv',
-    'password' => 'VmRN1v24jGsiQHyu',
+    'username' => 'basecsv',
+    'password' => 'AcDEfrwaPnlGCkfz',
     'charset' => 'utf8',
 ];
