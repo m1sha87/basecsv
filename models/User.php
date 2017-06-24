@@ -2,103 +2,142 @@
 
 namespace app\models;
 
-class User extends \yii\base\Object implements \yii\web\IdentityInterface
+use Yii;
+
+/**
+ * This is the model class for table "user".
+ *
+ * @property int $id
+ * @property string $name Имя
+ * @property string $login Логин
+ * @property string $password Пароль
+ * @property string $email E-mail
+ *
+ * @property EntityInWorkAggregate[] $entityInWorkAggregates
+ * @property NestingInWork[] $nestingInWorks
+ */
+class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
 {
-    public $id;
-    public $username;
-    public $password;
-    public $authKey;
-    public $accessToken;
-
-    private static $users = [
-        '100' => [
-            'id' => '100',
-            'username' => 'admin',
-            'password' => 'admin',
-            'authKey' => 'test100key',
-            'accessToken' => '100-token',
-        ],
-        '101' => [
-            'id' => '101',
-            'username' => 'demo',
-            'password' => 'demo',
-            'authKey' => 'test101key',
-            'accessToken' => '101-token',
-        ],
-    ];
-
-
+    CONST ROLE_ADMIN = 'admin';
+    
     /**
      * @inheritdoc
      */
-    public static function findIdentity($id)
+    public static function tableName()
     {
-        return isset(self::$users[$id]) ? new static(self::$users[$id]) : null;
+        return 'user';
     }
 
     /**
      * @inheritdoc
      */
-    public static function findIdentityByAccessToken($token, $type = null)
+    public function rules()
     {
-        foreach (self::$users as $user) {
-            if ($user['accessToken'] === $token) {
-                return new static($user);
+        return [
+            [['id', 'name', 'login', 'password'], 'required'],
+            [['id'], 'integer'],
+            [['name', 'login'], 'string', 'max' => 64],
+            [['password', 'email'], 'string', 'max' => 255],
+            [['login'], 'unique'],
+            [['id'], 'unique'],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function attributeLabels()
+    {
+        return [
+            'id' => 'ID',
+            'name' => 'Имя',
+            'login' => 'Логин',
+            'password' => 'Пароль',
+            'email' => 'E-mail',
+        ];
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getEntityInWorkAggregates()
+    {
+        return $this->hasMany(EntityInWorkAggregate::className(), ['user_id' => 'id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getNestingInWorks()
+    {
+        return $this->hasMany(NestingInWork::className(), ['user_id' => 'id']);
+    }
+    
+    /**
+     * @param bool $insert
+     * @return bool
+     */
+    public function beforeSave($insert)
+    {
+        if (parent::beforeSave($insert)) {
+            if($insert == self::EVENT_BEFORE_INSERT) {
+                $this->password = Yii::$app->getSecurity()->generatePasswordHash($this->password);
             }
+            return true;
+        } else {
+            return false;
         }
-
-        return null;
     }
-
+    
     /**
-     * Finds user by username
-     *
-     * @param string $username
-     * @return static|null
+     * @return int
      */
-    public static function findByUsername($username)
-    {
-        foreach (self::$users as $user) {
-            if (strcasecmp($user['username'], $username) === 0) {
-                return new static($user);
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getId()
+    public function getId ()
     {
         return $this->id;
     }
-
     /**
-     * @inheritdoc
+     * @param $id
+     * @return ActiveRecord
      */
-    public function getAuthKey()
+    public static function findIdentity ($id)
     {
-        return $this->authKey;
+        return static::findOne($id);
     }
-
-    /**
-     * @inheritdoc
-     */
-    public function validateAuthKey($authKey)
+    
+    public function getAuthKey ()
     {
-        return $this->authKey === $authKey;
     }
-
-    /**
-     * Validates password
-     *
-     * @param string $password password to validate
-     * @return bool if password provided is valid for current user
-     */
-    public function validatePassword($password)
+    
+    public function validateAuthKey ($authKey)
     {
-        return $this->password === $password;
+    }
+    
+    public static function findIdentityByAccessToken ($token, $type = null)
+    {
+    }
+    
+    public function savePassword ($password)
+    {
+        $this->password = Yii::$app->getSecurity()->generatePasswordHash($password);
+        $this->save();
+    }
+    
+    public function getRole ()
+    {
+        $roles = Yii::$app->authManager->getRolesByUser($this->id);
+        return key($roles);
+    }
+    
+    public function getRoles ()
+    {
+        $roles = Yii::$app->authManager->getRolesByUser($this->id);
+        return $roles;
+    }
+    
+    public function hasRole ($needRole)
+    {
+        $roles = $this->getRoles();
+        return isset($roles[$needRole]) && $roles[$needRole] ? true : false;
     }
 }
