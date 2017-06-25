@@ -23,7 +23,7 @@ class SiteController extends Controller
                 'class' => AccessControl::className(),
                 'rules' => [
                     [
-                        'actions' => ['login', 'test'],
+                        'actions' => ['login', 'test', 'error'],
                         'allow' => true,
                     ],
                     [
@@ -31,6 +31,12 @@ class SiteController extends Controller
                         'allow' => true,
                         'roles' => ['@'],
                     ],
+                    [
+                        'actions' => ['about', 'contact'],
+                        'allow' => true,
+                        'roles' => ['admin'],
+                    ],
+                    
                 ],
             ],
             'verbs' => [
