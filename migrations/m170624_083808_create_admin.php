@@ -2,7 +2,6 @@
 
 use yii\db\Migration;
 use app\models\User;
-use yii\rbac\DbManager;
 
 class m170624_083808_create_admin extends Migration
 {
@@ -13,17 +12,19 @@ class m170624_083808_create_admin extends Migration
         $admin->password = "admin";
         $admin->name = "admin";
         $admin->save();
-//        $admin->savePassword('admin');
-        $auth = new Yii::$app->getAuthManager();
-        $role = $auth->getRole(User::ROLE_ADMIN);
+        $auth = Yii::$app->getAuthManager();
+        $role = $auth->getRole('admin');
         $auth->assign($role, $admin->getId());
     }
 
     public function down()
     {
-        $auth = new DbManager();
+        $admin = User::find()
+            ->where(['login' => 'admin'])
+            ->one();
         $auth = Yii::$app->getAuthManager();
-        $role = $auth->getRole(Users::ROLE_ADMIN);
-        $auth->revoke($role, $modelUsers->id);
+        $role = $auth->getRole('admin');
+        $auth->revoke($role, $admin->id);
+        $admin->delete();
     }
 }

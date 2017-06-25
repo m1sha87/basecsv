@@ -18,8 +18,6 @@ use Yii;
  */
 class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
 {
-    CONST ROLE_ADMIN = 'admin';
-    
     /**
      * @inheritdoc
      */
@@ -34,12 +32,10 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
     public function rules()
     {
         return [
-            [['id', 'name', 'login', 'password'], 'required'],
-            [['id'], 'integer'],
+            [['name', 'login', 'password'], 'required'],
             [['name', 'login'], 'string', 'max' => 64],
             [['password', 'email'], 'string', 'max' => 255],
             [['login'], 'unique'],
-            [['id'], 'unique'],
         ];
     }
 
@@ -84,9 +80,8 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
                 $this->password = Yii::$app->getSecurity()->generatePasswordHash($this->password);
             }
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
     
     /**
@@ -98,11 +93,20 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
     }
     /**
      * @param $id
-     * @return ActiveRecord
+     * @return null, ActiveRecord
      */
     public static function findIdentity ($id)
     {
         return static::findOne($id);
+    }
+    
+    /**
+     * @param $login
+     * @return null, ActiveRecord
+     */
+    public static function findByLogin ($login)
+    {
+        return static::findOne(['login' => $login]);
     }
     
     public function getAuthKey ()
@@ -121,6 +125,15 @@ class User extends \yii\db\ActiveRecord implements \yii\web\IdentityInterface
     {
         $this->password = Yii::$app->getSecurity()->generatePasswordHash($password);
         $this->save();
+    }
+    
+    /**
+     * @param $password
+     * @return bool
+     */
+    public function validatePassword ($password)
+    {
+        return Yii::$app->getSecurity()->validatePassword($password, $this->password);
     }
     
     public function getRole ()
