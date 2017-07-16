@@ -1,0 +1,27 @@
+.category-block > .category-block {
+    margin-left: 22px;
+}
+
+.category-block > .category-block.has-childs {
+    margin-left: 11px;
+}
+
+.category.selected {
+    background-color: #245580;
+    color: #ffffff;
+}
+
+.category-widget {
+    height: 400px;
+}
+
+.category-widget .panel {
+    padding: 0;
+    height: 100%;
+}
+
+#categoryContainer {
+    overflow: scroll;
+    height: 100%;
+    white-space: nowrap
+}

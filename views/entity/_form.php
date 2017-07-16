@@ -18,16 +18,21 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'sku')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'category_name')->listBox($categories,
-        []
-    ); ?>
-
+    <?= $form->field($model, 'category_id')->hiddenInput(['id' => 'categoryId'])->label(false); ?>
+    
+    <p>Выберите категорию:</p>
+    
+    <?=\app\components\categoryWidget\CategoryWidget::widget([
+        'model' => new \app\models\Category(),
+        'root' => 1,
+        'current' => $model->category_id,
+    ]);?>
+    
     <div class="form-group">
         <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
     </div>
-
+    
     <?php ActiveForm::end(); ?>
     
-    <?=\pistol88\tree\widgets\Tree::widget(['model' => $categories]);;?>
 
 </div>

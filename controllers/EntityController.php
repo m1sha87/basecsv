@@ -65,15 +65,12 @@ class EntityController extends Controller
     public function actionCreate()
     {
         $model = new Entity();
-//        $categories = Category::getAllCategories();
-        $categories = new Category();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('create', [
                 'model' => $model,
-                'categories' => $categories,
             ]);
         }
     }
