@@ -11,7 +11,9 @@ use yii\widgets\ActiveForm;
 <div class="nesting-in-work-form">
 
     <?php $form = ActiveForm::begin(); ?>
-
+    
+    <?= $form->field($model, 'id')->hiddenInput()->label(false) ?>
+    
     <?= $form->field($model, 'nesting_id')->textInput() ?>
 
     <?= $form->field($model, 'is_done')->textInput() ?>

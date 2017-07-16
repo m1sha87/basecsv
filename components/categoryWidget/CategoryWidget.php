@@ -9,6 +9,7 @@ class CategoryWidget extends Widget
     public $model;
     public $root;
     public $current;
+    public $hide;
     
     public function init()
     {
@@ -29,6 +30,7 @@ class CategoryWidget extends Widget
                 'category' => $this->model,
                 'root' => $this->root,
                 'current' => $this->current,
+                'hide' => $this->hide,
             ]);
     }
 }

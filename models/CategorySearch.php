@@ -12,6 +12,8 @@ use app\models\Category;
  */
 class CategorySearch extends Category
 {
+    public $parent_name;
+    
     /**
      * @inheritdoc
      */
@@ -19,7 +21,7 @@ class CategorySearch extends Category
     {
         return [
             [['id', 'parent_id'], 'integer'],
-            [['name'], 'safe'],
+            [['name', 'parent_name'], 'safe'],
         ];
     }
 
@@ -42,12 +44,19 @@ class CategorySearch extends Category
     public function search($params)
     {
         $query = Category::find();
-
-        // add conditions that should always apply here
+        
+        $query->joinWith('parent');
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
         ]);
+    
+        $dataProvider->sort->attributes['parent_name'] = [
+            // The tables are the ones our relation are configured to
+            // in my case they are prefixed with "tbl_"
+            'asc' => ['parent.name' => SORT_ASC],
+            'desc' => ['parent.name' => SORT_DESC],
+        ];
 
         $this->load($params);
 
@@ -60,10 +69,10 @@ class CategorySearch extends Category
         // grid filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
-            'parent_id' => $this->parent_id,
         ]);
 
-        $query->andFilterWhere(['like', 'name', $this->name]);
+        $query->andFilterWhere(['like', 'category.name', $this->name]);
+        $query->andFilterWhere(['like', 'parent.name', $this->parent_name]);
 
         return $dataProvider;
     }

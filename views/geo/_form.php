@@ -11,7 +11,9 @@ use yii\widgets\ActiveForm;
 <div class="geo-form">
 
     <?php $form = ActiveForm::begin(); ?>
-
+    
+    <?= $form->field($model, 'id')->hiddenInput()->label(false) ?>
+    
     <?= $form->field($model, 'entity_id')->textInput() ?>
 
     <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>

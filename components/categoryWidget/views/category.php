@@ -3,6 +3,7 @@ use yii\helpers\Url;
 
 /* @var $root */
 /* @var $current */
+/* @var $hide */
 
 if (empty($category))
     return '';
@@ -23,6 +24,7 @@ if (empty($category))
 <script>
     var rootCategory = <?= $root ?>;
     var current = <?= $current ? $current : 'false' ?>;
+    var hide = <?= $hide ? $hide : 'false' ?>;
     var parents = false;
     var parentCounter = 0;
     
@@ -69,6 +71,8 @@ if (empty($category))
             parent.find('i.glyphicon-plus').toggleClass('glyphicon-plus glyphicon-minus');
         }
         for (var i = 0, len = categories.length; i < len; i++) {
+            if (hide && hide == categories[i]['id'])
+                continue;
             var block = $('<div />', {
                 'data-id': categories[i]['id'],
                 'class': 'category-block',
@@ -92,6 +96,9 @@ if (empty($category))
             }
             else
                 $('.category-block[data-id=' + parents[parentCounter++] + ']').trigger('click');
+        } else {
+            if ($('.category').length == 1)
+                $('.category').trigger('click');
         }
     }
     
@@ -108,11 +115,12 @@ if (empty($category))
         .on('click', '.category', function () {
             $('.category.selected').removeClass('selected');
             $(this).addClass('selected');
-            $('#categoryId').val($(this).data('id'));
+            $('#widgetCategoryField').val($(this).data('id'));
         });
     
     $(document).ready(function () {
-        if (current) {
+        if (current && current != rootCategory) {
+            console.log(current);
             getParents();
         } else {
             getChilds();

@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use app\models\Entity;
 use Yii;
 use app\models\Category;
 use app\models\CategorySearch;
@@ -61,6 +62,9 @@ class CategoryController extends Controller {
         $model = new Category();
         
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            $parent = $model->parent;
+            $parent->has_childs = 1;
+            $parent->save();
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('create', [
@@ -78,7 +82,19 @@ class CategoryController extends Controller {
     public function actionUpdate($id) {
         $model = $this->findModel($id);
         
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            $oldParentId = $model->getOldAttribute('parent_id');
+            if ($oldParentId != $model->parent_id) {
+                $model->save(false);
+                if (!Category::findOne(['parent_id' => $oldParentId])) {
+                    $oldParent = Category::findOne(['id' => $oldParentId]);
+                    $oldParent->has_childs = null;
+                    $oldParent->save();
+                }
+                $parent = $model->parent;
+                $parent->has_childs = 1;
+                $parent->save();
+            }
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('update', [
@@ -94,7 +110,15 @@ class CategoryController extends Controller {
      * @return mixed
      */
     public function actionDelete($id) {
-        $this->findModel($id)->delete();
+        $model = $this->findModel($id);
+        $parent = $model->parent;
+        Category::updateAll(['parent_id' => $parent->id], ['parent_id' => $model->id]);
+        Entity::updateAll(['category_id' => 1], ['category_id' => $model->id]);
+        $model->delete();
+        if (!Category::findOne(['parent_id' => $parent->id])) {
+            $parent->has_childs = null;
+            $parent->save();
+        }
         
         return $this->redirect(['index']);
     }
@@ -125,7 +149,7 @@ class CategoryController extends Controller {
             $data = Yii::$app->request->post();
             if ($category = Category::findOne(['id' => $data['id']])) {
                 $categories[] = $category->id;
-                while($category->parent_id) {
+                while(!is_null($category->parent_id)) {
                     if ($category->parent_id == $data['root']) {
                         \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
                         return [

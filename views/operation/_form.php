@@ -11,7 +11,9 @@ use yii\widgets\ActiveForm;
 <div class="operation-form">
 
     <?php $form = ActiveForm::begin(); ?>
-
+    
+    <?= $form->field($model, 'id')->hiddenInput()->label(false) ?>
+    
     <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'unit')->textInput(['maxlength' => true]) ?>
