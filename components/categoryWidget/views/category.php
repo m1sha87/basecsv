@@ -22,6 +22,9 @@ if (empty($category))
 
 <script>
     var rootCategory = <?= $root ?>;
+    var current = <?= $current ? $current : 'false' ?>;
+    var parents = false;
+    var parentCounter = 0;
     
     function getChilds() {
         var id = $(this).data('id') || rootCategory;
@@ -35,6 +38,24 @@ if (empty($category))
             success: function (data) {
                 if (data.categories)
                     drawChilds(data.categories, id);
+            }
+        });
+    }
+
+    function getParents() {
+        $.ajax({
+            url: '<?php echo Yii::$app->request->baseUrl . '/category/get-parents' ?>',
+            type: 'POST',
+            data: {
+                id: current,
+                root: rootCategory,
+                _csrf : '<?=Yii::$app->request->getCsrfToken()?>'
+            },
+            success: function (data) {
+                if (data.categories) {
+                    parents = data.categories;
+                    getChilds();
+                }
             }
         });
     }
@@ -57,12 +78,20 @@ if (empty($category))
                 'text': categories[i]['name'],
             });
             item.addClass('category');
-            if (categories[i].hasOwnProperty('childs')) {
+            if (categories[i].has_childs) {
                 block.addClass('has-childs').one('click', getChilds);
                 item.prepend('<i class="glyphicon glyphicon-plus"></i>');
             }
             block.append(item);
             parent.append(block);
+        }
+        if (parents && parents[parentCounter]) {
+            if (parents.length == parentCounter+1) {
+                $('.category[data-id=' + parents[parentCounter] + ']').trigger('click');
+                parents = false;
+            }
+            else
+                $('.category-block[data-id=' + parents[parentCounter++] + ']').trigger('click');
         }
     }
     
@@ -83,6 +112,10 @@ if (empty($category))
         });
     
     $(document).ready(function () {
-        getChilds();
+        if (current) {
+            getParents();
+        } else {
+            getChilds();
+        }
     });
 </script>

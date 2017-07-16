@@ -1,3 +1,7 @@
+.category, .category.i {
+    cursor: pointer;
+}
+
 .category-block > .category-block {
     margin-left: 22px;
 }

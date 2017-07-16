@@ -20,6 +20,10 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'category_id')->hiddenInput(['id' => 'categoryId'])->label(false); ?>
     
+    <div class="form-group">
+        <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
+    </div>
+    
     <p>Выберите категорию:</p>
     
     <?=\app\components\categoryWidget\CategoryWidget::widget([
@@ -27,10 +31,6 @@ use yii\widgets\ActiveForm;
         'root' => 1,
         'current' => $model->category_id,
     ]);?>
-    
-    <div class="form-group">
-        <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
-    </div>
     
     <?php ActiveForm::end(); ?>
     

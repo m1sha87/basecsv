@@ -103,35 +103,12 @@ class CategoryController extends Controller {
         if (Yii::$app->request->isAjax) {
             $data = Yii::$app->request->post();
             $categories = Category::find()
-                ->select(['id', 'name', 'parent_id'])
+                ->select('*')
                 ->where(['parent_id' => $data['id']])
                 ->orderBy(['name' => SORT_ASC])
                 ->asArray()
                 ->all();
             if (!empty($categories)) {
-                $ids = array_column($categories, 'id');
-                $childs = Category::find()
-                    ->select(['id', 'name', 'parent_id'])
-                    ->where(['in', 'parent_id' , $ids])
-                    ->orderBy(['parent_id' => SORT_ASC, 'name' => SORT_ASC])
-                    ->asArray()
-                    ->all();
-                if (!empty($childs)) {
-                    $count = count($childs);
-                    $i = 0;
-                    foreach ($categories as $key => $category) {
-                        while ($i < $count) {
-                            if ($childs[$i]['parent_id'] == $category['id']) {
-                                if (!isset($categories[$key]['childs']))
-                                    $categories[$key]['childs'] = [];
-                                $categories[$key]['childs'][] = $childs[$i];
-                                $i++;
-                            } else {
-                                break;
-                            }
-                        }
-                    }
-                }
                 \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
                 return [
                     'categories' => $categories,
@@ -139,6 +116,30 @@ class CategoryController extends Controller {
             }
             return false;
         }
+        return false;
+    }
+    
+    public function actionGetParents()
+    {
+        if (Yii::$app->request->isAjax) {
+            $data = Yii::$app->request->post();
+            if ($category = Category::findOne(['id' => $data['id']])) {
+                $categories[] = $category->id;
+                while($category->parent_id) {
+                    if ($category->parent_id == $data['root']) {
+                        \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+                        return [
+                            'categories' => $categories,
+                        ];
+                    }
+                    if ($category = Category::findOne(['id' => $category->parent_id]))
+                        array_unshift($categories, $category->id);
+                    else
+                        return false;
+                }
+            }
+        }
+        return false;
     }
     
     /**
