@@ -8,7 +8,6 @@ use Yii;
  * This is the model class for table "area".
  *
  * @property int $id
- * @property string $identifier Идентификатор
  * @property string $name Название
  *
  * @property Operation[] $operations
@@ -29,11 +28,10 @@ class Area extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['id', 'identifier', 'name'], 'required'],
+            [['name'], 'required'],
             [['id'], 'integer'],
-            [['identifier', 'name'], 'string', 'max' => 255],
-            [['identifier'], 'unique'],
-            [['id'], 'unique'],
+            [['name'], 'string', 'min' => 1, 'max' => 255],
+            [['id', 'name'], 'unique'],
         ];
     }
 
@@ -44,7 +42,6 @@ class Area extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'identifier' => 'Идентификатор',
             'name' => 'Название',
         ];
     }

@@ -19,7 +19,7 @@ class AreaSearch extends Area
     {
         return [
             [['id'], 'integer'],
-            [['identifier', 'name'], 'safe'],
+            [['name'], 'safe'],
         ];
     }
 
@@ -62,8 +62,7 @@ class AreaSearch extends Area
             'id' => $this->id,
         ]);
 
-        $query->andFilterWhere(['like', 'identifier', $this->identifier])
-            ->andFilterWhere(['like', 'name', $this->name]);
+        $query->andFilterWhere(['like', 'name', $this->name]);
 
         return $dataProvider;
     }

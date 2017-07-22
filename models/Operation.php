@@ -10,10 +10,9 @@ use Yii;
  * @property int $id
  * @property string $name Название
  * @property string $unit Ед. измерения
- * @property int $area_id Участок
  *
  * @property EntityHasOperation[] $entityHasOperations
- * @property Area $area
+ * @property OperationHasArea[] $operationHasAreas
  */
 class Operation extends \yii\db\ActiveRecord
 {
@@ -31,10 +30,8 @@ class Operation extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'area_id'], 'required'],
-            [['area_id'], 'integer'],
+            [['name'], 'required'],
             [['name', 'unit'], 'string', 'max' => 255],
-            [['area_id'], 'exist', 'skipOnError' => true, 'targetClass' => Area::className(), 'targetAttribute' => ['area_id' => 'id']],
         ];
     }
 
@@ -47,7 +44,6 @@ class Operation extends \yii\db\ActiveRecord
             'id' => 'ID',
             'name' => 'Название',
             'unit' => 'Ед. измерения',
-            'area_id' => 'Участок',
         ];
     }
 
@@ -62,8 +58,8 @@ class Operation extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getArea()
+    public function getOperationHasAreas()
     {
-        return $this->hasOne(Area::className(), ['id' => 'area_id']);
+        return $this->hasMany(OperationHasArea::className(), ['operation_id' => 'id']);
     }
 }
