@@ -18,7 +18,7 @@ class OperationSearch extends Operation
     public function rules()
     {
         return [
-            [['id', 'area_id'], 'integer'],
+            [['id'], 'integer'],
             [['name', 'unit'], 'safe'],
         ];
     }
@@ -60,7 +60,6 @@ class OperationSearch extends Operation
         // grid filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
-            'area_id' => $this->area_id,
         ]);
 
         $query->andFilterWhere(['like', 'name', $this->name])

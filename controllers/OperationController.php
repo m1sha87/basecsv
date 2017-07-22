@@ -2,9 +2,11 @@
 
 namespace app\controllers;
 
+use app\models\Area;
 use Yii;
 use app\models\Operation;
 use app\models\OperationSearch;
+use yii\helpers\ArrayHelper;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -66,6 +68,12 @@ class OperationController extends Controller
         $model = new Operation();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            if (!empty($newAreas = Yii::$app->request->post('Operation')['areas'])) {
+                $newAreas = Area::findAll(['id' => $newAreas]);
+                foreach ($newAreas as $area) {
+                    $model->link('areas', $area);
+                }
+            }
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('create', [
@@ -83,8 +91,19 @@ class OperationController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
-
+    
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            $areas = $model->getAreas()->indexBy('id')->all();
+            if (!empty($newAreas = Yii::$app->request->post('Operation')['areas'])) {
+                $newAreas = Area::findAll(['id' => $newAreas]);
+                foreach ($newAreas as $area) {
+                    if (!ArrayHelper::remove($areas, $area->id))
+                        $model->link('areas', $area);
+                }
+            }
+            foreach ($areas as $area) {
+                $model->unlink('areas', $area, true);
+            }
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('update', [
@@ -121,4 +140,7 @@ class OperationController extends Controller
             throw new NotFoundHttpException('The requested page does not exist.');
         }
     }
+
+    
+    
 }

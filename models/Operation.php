@@ -44,6 +44,7 @@ class Operation extends \yii\db\ActiveRecord
             'id' => 'ID',
             'name' => 'Название',
             'unit' => 'Ед. измерения',
+            'areas' => 'Участки',
         ];
     }
 
@@ -61,5 +62,14 @@ class Operation extends \yii\db\ActiveRecord
     public function getOperationHasAreas()
     {
         return $this->hasMany(OperationHasArea::className(), ['operation_id' => 'id']);
+    }
+    
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getAreas()
+    {
+        return $this->hasMany(Area::className(), ['id' => 'area_id'])
+            ->viaTable('operation_has_area', ['operation_id' => 'id']);
     }
 }

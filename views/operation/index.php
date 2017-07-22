@@ -2,6 +2,7 @@
 
 use yii\helpers\Html;
 use yii\grid\GridView;
+use yii\helpers\ArrayHelper;
 
 /* @var $this yii\web\View */
 /* @var $searchModel app\models\OperationSearch */
@@ -23,13 +24,21 @@ $this->params['breadcrumbs'][] = $this->title;
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
         'columns' => [
-            ['class' => 'yii\grid\SerialColumn'],
-
-            'id',
             'name',
             'unit',
-            'area_id',
-
+            [
+                'label' => 'Участки',
+                'value' => function($model) {
+                    $areas = ArrayHelper::map($model->areas, 'id', 'name');
+                    return Html::ol($areas, ['item' => function($item, $index) {
+                        return Html::tag(
+                            'li', Html::a($item, ['area/view', 'id' => $index])
+                        );
+                    }]);
+                },
+                'format' => 'raw',
+            ],
+            
             ['class' => 'yii\grid\ActionColumn'],
         ],
     ]); ?>

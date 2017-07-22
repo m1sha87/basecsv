@@ -10,7 +10,6 @@ use Yii;
  * @property int $id
  * @property int $operation_id
  * @property int $area_id
- * @property int $is_default
  *
  * @property Area $area
  * @property Operation $operation
@@ -32,7 +31,7 @@ class OperationHasArea extends \yii\db\ActiveRecord
     {
         return [
             [['operation_id', 'area_id'], 'required'],
-            [['operation_id', 'area_id', 'is_default'], 'integer'],
+            [['operation_id', 'area_id'], 'integer'],
             [['area_id'], 'exist', 'skipOnError' => true, 'targetClass' => Area::className(), 'targetAttribute' => ['area_id' => 'id']],
             [['operation_id'], 'exist', 'skipOnError' => true, 'targetClass' => Operation::className(), 'targetAttribute' => ['operation_id' => 'id']],
         ];
@@ -47,7 +46,6 @@ class OperationHasArea extends \yii\db\ActiveRecord
             'id' => 'ID',
             'operation_id' => 'Operation ID',
             'area_id' => 'Area ID',
-            'is_default' => 'Is Default',
         ];
     }
 
