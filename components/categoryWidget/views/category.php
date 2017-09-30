@@ -1,30 +1,33 @@
 <?php
 use yii\helpers\Url;
 
-/* @var $root */
-/* @var $current */
-/* @var $hide */
+/* @var $model \app\components\categoryWidget\CategoryWidget */
 
-if (empty($category))
-    return '';
 ?>
-<div class="row category-widget">
+<div class="row category-widget" id="<?= $model->id ?>">
     <div class="panel panel-default col-sm-5">
-        <div class="panel-body" id="categoryContainer">
+        <div class="panel-body categoryContainer">
             
         </div>
     </div>
     <div class="panel panel-default col-sm-7">
+        <div class="panel-heading categoryToolbar">
+            <?= $model->toolbar ?>
+        </div>
         <div class="panel-body">
+            <div class="itemContainer">
             
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    var rootCategory = <?= $root ?>;
-    var current = <?= $current ? $current : 'false' ?>;
-    var hide = <?= $hide ? $hide : 'false' ?>;
+    var rootCategory = <?= $model->root ?>;
+    var mainCategory = <?= $model->main ? $model->main : 'false' ?>;
+    var current = <?= $model->current ? $model->current : 'false' ?>;
+    var hide = <?= $model->hide ? $model->hide : 'false' ?>;
+    var types = <?= $model->types ? json_encode($model->types) : 'false' ?>;
     var parents = false;
     var parentCounter = 0;
     
@@ -65,7 +68,7 @@ if (empty($category))
     function drawChilds(categories, id) {
         var parent;
         if (id == rootCategory)
-            parent = $('#categoryContainer');
+            parent = $('.categoryContainer');
         else {
             parent = $('.category-block[data-id=' + id + ']');
             parent.find('i.glyphicon-plus').toggleClass('glyphicon-plus glyphicon-minus');
@@ -73,13 +76,16 @@ if (empty($category))
         for (var i = 0, len = categories.length; i < len; i++) {
             if (hide && hide == categories[i]['id'])
                 continue;
+            if (mainCategory && categories[i]['parent_id'] == rootCategory && categories[i]['id'] != mainCategory)
+                continue;
             var block = $('<div />', {
                 'data-id': categories[i]['id'],
-                'class': 'category-block',
+                'class': 'category-block'
             });
             var item = $('<div />', {
                 'data-id': categories[i]['id'],
-                'text': categories[i]['name'],
+                'data-name': categories[i]['name'],
+                'text': categories[i]['name']
             });
             item.addClass('category');
             if (categories[i].has_childs) {
@@ -110,17 +116,40 @@ if (empty($category))
         $(this).toggleClass('glyphicon-plus glyphicon-minus').parent().parent().find('>div.category-block').show();
     }
     
+    function getItems(category) {
+        var id = category.data('id') || rootCategory;
+        $.ajax({
+            url: '<?php echo Yii::$app->request->baseUrl . '/category/get-items' ?>',
+            type: 'POST',
+            data: {
+                id: id,
+                types: types,
+                _csrf : '<?=Yii::$app->request->getCsrfToken()?>'
+            },
+            success: function (data) {
+                $('.itemContainer').html(data);
+                $('.category-widget').triggerHandler('afterAddItems', $(this));
+            }
+        });
+    }
+    
     $(document).on('click', 'i.glyphicon-minus', hideCategories)
         .on('click', 'i.glyphicon-plus', showCategories)
         .on('click', '.category', function () {
             $('.category.selected').removeClass('selected');
             $(this).addClass('selected');
-            $('#widgetCategoryField').val($(this).data('id'));
+            $('.category-widget').triggerHandler('afterSelectCategory', $(this));
+//            $('#widgetCategoryField').val($(this).data('id'));
+//            $('#widgetCategoryNameField').val($(this).data('name'));
+            if (types)
+                getItems($(this));
+        }).on('click', '.item', function () {
+            $('.item.selected').removeClass('selected');
+            $(this).addClass('selected');
         });
     
     $(document).ready(function () {
         if (current && current != rootCategory) {
-            console.log(current);
             getParents();
         } else {
             getChilds();

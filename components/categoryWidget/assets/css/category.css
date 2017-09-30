@@ -1,16 +1,16 @@
-.category, .category.i {
+.category-widget .category, .category-widget .category.i {
     cursor: pointer;
 }
 
-.category-block > .category-block {
+.category-widget .category-block > .category-block {
     margin-left: 22px;
 }
 
-.category-block > .category-block.has-childs {
+.category-widget .category-block > .category-block.has-childs {
     margin-left: 11px;
 }
 
-.category.selected {
+.category-widget .category.selected {
     background-color: #245580;
     color: #ffffff;
 }
@@ -24,8 +24,30 @@
     height: 100%;
 }
 
-#categoryContainer {
+.category-widget .categoryContainer {
     overflow: scroll;
     height: 100%;
     white-space: nowrap
+}
+
+.category-widget .itemContainer {
+    width: 100%;
+}
+
+.category-widget .item {
+    cursor: pointer;
+}
+
+.category-widget .item .item-text,
+.category-widget .item .item-additional-text {
+    float: left;
+}
+
+.category-widget .item .item-text {
+    margin-right: 15px;
+}
+
+.category-widget .item .item-button {
+    width: 50px;
+    text-align: right;
 }

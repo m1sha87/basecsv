@@ -3,6 +3,8 @@
 namespace app\controllers;
 
 use app\models\Entity;
+use app\models\Geo;
+use app\models\Nesting;
 use Yii;
 use app\models\Category;
 use app\models\CategorySearch;
@@ -61,16 +63,18 @@ class CategoryController extends Controller {
     public function actionCreate() {
         $model = new Category();
         
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
             $parent = $model->parent;
             $parent->has_childs = 1;
-            $parent->save();
-            return $this->redirect(['view', 'id' => $model->id]);
-        } else {
-            return $this->render('create', [
-                'model' => $model,
-            ]);
+            if ($parent->save()) {
+                $model->save(false);
+                return $this->redirect(['view', 'id' => $model->id]);
+            }
+            $model->addError('parent_id', 'Родительская категория не может быть сохранена');
         }
+        return $this->render('create', [
+            'model' => $model,
+        ]);
     }
     
     /**
@@ -162,6 +166,43 @@ class CategoryController extends Controller {
                         return false;
                 }
             }
+        }
+        return false;
+    }
+    
+    public function actionGetItems() {
+        if (Yii::$app->request->isAjax) {
+            $data = Yii::$app->request->post();
+            if ($data['id'] && $data['types']) {
+                $items = [];
+                if (in_array('geo', $data['types'])) {
+                    $result = Geo::find()
+                        ->select('*')
+                        ->where(['category_id' => $data['id']])
+                        ->all();
+                    $items = array_merge($items, $result);
+                }
+                if (in_array('nesting', $data['types'])) {
+                    $result = Nesting::find()
+                        ->select('*')
+                        ->where(['category_id' => $data['id']])
+                        ->all();
+                    $items = array_merge($items, $result);
+                }
+                usort($items, function($a, $b)
+                {
+                    return strcmp($a->name, $b->name);
+                });
+                if (!empty($items)) {
+                    $view = isset($data['view']) ? $data['view'] : 'list';
+                    return $this->renderPartial($view, ['items' => $items]);
+//                    \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+//                    return [
+//                        'items' => $items,
+//                    ];
+                }
+            }
+            return false;
         }
         return false;
     }

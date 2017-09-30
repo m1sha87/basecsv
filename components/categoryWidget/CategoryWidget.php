@@ -6,10 +6,12 @@ use yii\base\Widget;
 
 class CategoryWidget extends Widget
 {
-    public $model;
+    public $toolbar;
     public $root;
+    public $main;
     public $current;
     public $hide;
+    public $types;
     
     public function init()
     {
@@ -25,12 +27,6 @@ class CategoryWidget extends Widget
     public function run()
     {
         CategoryWidgetAsset::register($this->getView());
-        return $this->render('category',
-            [
-                'category' => $this->model,
-                'root' => $this->root,
-                'current' => $this->current,
-                'hide' => $this->hide,
-            ]);
+        return $this->render('category', ['model' => $this]);
     }
 }

@@ -31,8 +31,8 @@ class NestingHasGeo extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['nesting_id', 'geo_id'], 'required'],
-            [['nesting_id', 'geo_id', 'count'], 'integer'],
+            [['geo_id', 'count'], 'required'],
+            [['nesting_id', 'geo_id', 'count', 'id'], 'integer'],
             [['geo_id'], 'exist', 'skipOnError' => true, 'targetClass' => Geo::className(), 'targetAttribute' => ['geo_id' => 'id']],
             [['nesting_id'], 'exist', 'skipOnError' => true, 'targetClass' => Nesting::className(), 'targetAttribute' => ['nesting_id' => 'id']],
         ];

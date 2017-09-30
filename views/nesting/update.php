@@ -4,6 +4,7 @@ use yii\helpers\Html;
 
 /* @var $this yii\web\View */
 /* @var $model app\models\Nesting */
+/* @var $modelsGeos app\models\NestingHasGeo */
 
 $this->title = 'Update Nesting: ' . $model->name;
 $this->params['breadcrumbs'][] = ['label' => 'Nestings', 'url' => ['index']];
@@ -16,6 +17,7 @@ $this->params['breadcrumbs'][] = 'Update';
 
     <?= $this->render('_form', [
         'model' => $model,
+        'modelsGeos' => $modelsGeos,
     ]) ?>
 
 </div>

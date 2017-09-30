@@ -1,11 +1,11 @@
 <?php
 
 use yii\helpers\Html;
-use yii\widgets\ActiveForm;
+use yii\bootstrap\ActiveForm;
 
 /* @var $this yii\web\View */
 /* @var $model app\models\Entity */
-/* @var $form yii\widgets\ActiveForm */
+/* @var $form yii\bootstrap\ActiveForm */
 ?>
 
 <div class="entity-form">
@@ -29,7 +29,6 @@ use yii\widgets\ActiveForm;
     <p>Выберите категорию:</p>
     
     <?=\app\components\categoryWidget\CategoryWidget::widget([
-        'model' => new \app\models\Category(),
         'root' => 1,
         'current' => $model->category_id,
     ]);?>

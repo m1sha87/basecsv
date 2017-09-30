@@ -2,12 +2,21 @@
 
 namespace app\controllers;
 
+use app\models\Geo;
+use app\models\NestingHasGeo;
+use app\models\UploadForm;
 use Yii;
 use app\models\Nesting;
 use app\models\NestingSearch;
+use app\models\Model;
+use yii\db\Exception;
+use yii\helpers\ArrayHelper;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\web\Response;
+use yii\web\UploadedFile;
+use yii\widgets\ActiveForm;
 
 /**
  * NestingController implements the CRUD actions for Nesting model.
@@ -15,7 +24,7 @@ use yii\filters\VerbFilter;
 class NestingController extends Controller
 {
     /**
-     * @inheritdoc
+     *sudo ln -s /opt/phpstorm/bin/phpstorm.sh /usr/local/bin/phpstorm @inheritdoc
      */
     public function behaviors()
     {
@@ -37,10 +46,25 @@ class NestingController extends Controller
     {
         $searchModel = new NestingSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        $uploadModel = new UploadForm();
+    
+        if (Yii::$app->request->isPost) {
+            $uploadModel->jobFile = UploadedFile::getInstance($uploadModel, 'jobFile');
+            if ($uploadModel->upload()) {
+                $uploadModel->parseJob();
+                if ($nesting = Yii::$app->session->get('nesting')) {
+                    if ($result = Nesting::findOne(['name' => $nesting->name])) {
+                        return $this->redirect('nesting/update', ['id' => $result->id]);
+                    }
+                    return $this->redirect('nesting/create');
+                }
+            }
+        }
 
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'uploadModel' => $uploadModel,
         ]);
     }
 
@@ -64,14 +88,50 @@ class NestingController extends Controller
     public function actionCreate()
     {
         $model = new Nesting();
-
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
-        } else {
-            return $this->render('create', [
-                'model' => $model,
-            ]);
+        $modelsGeos = [new NestingHasGeo()];
+        if ($model->load(Yii::$app->request->post())) {
+        
+            $modelsGeos = Model::createMultiple(NestingHasGeo::classname());
+            Model::loadMultiple($modelsGeos, Yii::$app->request->post());
+        
+            // ajax validation
+            if (Yii::$app->request->isAjax) {
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ArrayHelper::merge(
+                    ActiveForm::validateMultiple($modelsGeos),
+                    ActiveForm::validate($model)
+                );
+            }
+        
+            $valid = $model->validate();
+            $valid = Model::validateMultiple($modelsGeos) && $valid;
+        
+            if ($valid) {
+                $transaction = \Yii::$app->db->beginTransaction();
+                try {
+                    if ($flag = $model->save(false)) {
+                        foreach ($modelsGeos as $item) {
+                            $item->nesting_id = $model->id;
+                            if (! ($flag = $item->save(false))) {
+                                $transaction->rollBack();
+                                break;
+                            }
+                        }
+                    }
+                    if ($flag) {
+                        $transaction->commit();
+                        return $this->redirect(['view', 'id' => $model->id]);
+                    }
+                } catch (Exception $e) {
+                    $transaction->rollBack();
+                }
+            }
         }
+    
+        return $this->render('create', [
+            'model' => $model,
+            'modelsGeos' => (empty($modelsGeos)) ? [new NestingHasGeo()] : $modelsGeos
+        ]);
     }
 
     /**
@@ -83,14 +143,55 @@ class NestingController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+        $modelsGeos = $model->nestingHasGeos;
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
-        } else {
-            return $this->render('update', [
-                'model' => $model,
-            ]);
+        if ($model->load(Yii::$app->request->post())) {
+    
+            $oldIDs = ArrayHelper::map($modelsGeos, 'id', 'id');
+            $modelsGeos = Model::createMultiple(NestingHasGeo::classname(), $modelsGeos);
+            Model::loadMultiple($modelsGeos, Yii::$app->request->post());
+            $deletedIDs = array_diff($oldIDs, array_filter(ArrayHelper::map($modelsGeos, 'id', 'id')));
+    
+            // ajax validation
+            if (Yii::$app->request->isAjax) {
+                Yii::$app->response->format = Response::FORMAT_JSON;
+                return ArrayHelper::merge(
+                    ActiveForm::validateMultiple($modelsGeos),
+                    ActiveForm::validate($model)
+                );
+            }
+            
+            $valid = $model->validate();
+            $valid = Model::validateMultiple($modelsGeos) && $valid;
+    
+            if ($valid) {
+                $transaction = \Yii::$app->db->beginTransaction();
+                try {
+                    if ($flag = $model->save(false)) {
+                        if (!empty($deletedIDs)) {
+                            NestingHasGeo::deleteAll(['id' => $deletedIDs]);
+                        }
+                        foreach ($modelsGeos as $item) {
+                            $item->nesting_id = $model->id;
+                            if (! ($flag = $item->save(false))) {
+                                $transaction->rollBack();
+                                break;
+                            }
+                        }
+                    }
+                    if ($flag) {
+                        $transaction->commit();
+                        return $this->redirect(['view', 'id' => $model->id]);
+                    }
+                } catch (Exception $e) {
+                    $transaction->rollBack();
+                }
+            }
         }
+        return $this->render('update', [
+            'model' => $model,
+            'modelsGeos' => (empty($modelsGeos)) ? [new NestingHasGeo()] : $modelsGeos,
+        ]);
     }
 
     /**

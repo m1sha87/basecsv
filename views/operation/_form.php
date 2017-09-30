@@ -1,12 +1,12 @@
 <?php
 
 use yii\helpers\Html;
-use yii\widgets\ActiveForm;
+use yii\bootstrap\ActiveForm;
 use app\models\Area;
 
 /* @var $this yii\web\View */
 /* @var $model app\models\Operation */
-/* @var $form yii\widgets\ActiveForm */
+/* @var $form yii\bootstrap\ActiveForm */
 
 $areas = Area::find()->select(['id', 'name'])->asArray()->all();
 ?>

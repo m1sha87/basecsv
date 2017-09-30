@@ -12,14 +12,19 @@ use Yii;
  * @property int $x Длина
  * @property int $y Ширина
  * @property int $s Толщина
+ * @property string $material Материал
  * @property string $time Время
  * @property string $tools Инструмент
+ * @property int $category_id Категория
  *
  * @property NestingHasGeo[] $nestingHasGeos
  * @property NestingInWork[] $nestingInWorks
  */
 class Nesting extends \yii\db\ActiveRecord
 {
+    public $type = 'nesting';
+    public $geosForm;
+    
     /**
      * @inheritdoc
      */
@@ -34,11 +39,12 @@ class Nesting extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'x', 'y', 's'], 'required'],
-            [['x', 'y', 's'], 'integer'],
+            [['name', 'x', 'y', 's', 'category_id'], 'required'],
+            [['x', 'y', 's', 'category_id'], 'integer'],
             [['time'], 'safe'],
             [['tools'], 'string'],
-            [['name'], 'string', 'max' => 255],
+            [['name', 'material'], 'string', 'max' => 255],
+            [['category_id'], 'exist', 'skipOnError' => true, 'targetClass' => Category::className(), 'targetAttribute' => ['category_id' => 'id']],
         ];
     }
 
@@ -53,8 +59,11 @@ class Nesting extends \yii\db\ActiveRecord
             'x' => 'Длина',
             'y' => 'Ширина',
             's' => 'Толщина',
+            'material' => 'Материал',
             'time' => 'Время',
             'tools' => 'Инструмент',
+            'size' => 'Габариты',
+            'category_name' => 'Категория',
         ];
     }
 
@@ -65,6 +74,15 @@ class Nesting extends \yii\db\ActiveRecord
     {
         return $this->hasMany(NestingHasGeo::className(), ['nesting_id' => 'id']);
     }
+    
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getGeos()
+    {
+        return $this->hasMany(Geo::className(), ['id' => 'geo_id'])
+            ->viaTable('nesting_has_geo', ['nesting_id' => 'id']);
+    }
 
     /**
      * @return \yii\db\ActiveQuery
@@ -72,5 +90,44 @@ class Nesting extends \yii\db\ActiveRecord
     public function getNestingInWorks()
     {
         return $this->hasMany(NestingInWork::className(), ['nesting_id' => 'id']);
+    }
+    
+    public function getSize()
+    {
+        return "{$this->x}x{$this->y}x{$this->s}";
+    }
+    
+    public static function getMaterials()
+    {
+        return [
+            'Х/К', 'ОЦ', 'НЕРЖ',
+        ];
+    }
+    
+    public static function getSizes()
+    {
+        return [
+            '2000x1000', '2500x1250',
+        ];
+    }
+    
+    public static function getThickness()
+    {
+        return [
+            '8', '10', '15', '20',
+        ];
+    }
+    
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getCategory()
+    {
+        return $this->hasOne(Category::className(), ['id' => 'category_id']);
+    }
+    
+    public function getIcon()
+    {
+        return '/images/jnf.ico';
     }
 }

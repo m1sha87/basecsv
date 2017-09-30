@@ -113,3 +113,17 @@ a.desc:after {
 .nav > li > form > button.logout:focus {
     outline: none;
 }
+
+div.required label.control-label:after {
+    content: " *";
+    color: red;
+}
+
+.param-list  {
+    margin: -10px 0 10px;
+}
+
+.param-list a {
+    cursor: pointer;
+    margin: 0 5px;
+}
