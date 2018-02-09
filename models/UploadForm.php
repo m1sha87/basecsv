@@ -66,7 +66,9 @@ class UploadForm extends Model
                 $nesting->material = trim(substr ($line, $start, $end-$start));
                 $start = strrpos($line, "S =")+3;
                 $end = strpos($line, "X");
-                $nesting->s = trim(substr ($line, $start, $end-$start));
+                $nestingS = trim(substr ($line, $start, $end-$start));
+                $nestingS = floatval($nestingS);
+                $nesting->s = (int)$nestingS*10;
                 $start = strrpos($line, "X =")+3;
                 $end = strpos($line, "Y");
                 $nesting->x = (int)trim(substr ($line, $start, $end-$start));
@@ -77,7 +79,7 @@ class UploadForm extends Model
             if(stristr($line, 'листов')) {
                 $start = strpos($line, ":")+1;
                 $end = strpos($line, "Д");
-                $nesting->count = trim(substr ($line, $start, $end-$start));
+//                $nesting->count = trim(substr ($line, $start, $end-$start));
                 continue;
             }
             // Чтение инструментов
@@ -97,18 +99,27 @@ class UploadForm extends Model
                 $i+=2;
                 while((stristr($lines[$i+1], 'ЭФФЕК') == FALSE) and ($i < 50)){
                     if ($lines[$i] != '') {
-                        $geo = new Geo();
                         // Разбиваем GEO
                         $end = strpos($lines[$i], ":");
-                        $geo->name = trim(substr ($lines[$i], 0, $end));
-                        $start = strpos($lines[$i], "Size", $end)+4;
+                        $geoName = trim(substr ($lines[$i], 0, $end));
+                        $start = strpos($lines[$i], "Size", $end) + 4;
                         $end = strpos($lines[$i], "x", $start);
-                        $geo->x = trim(substr ($lines[$i], $start, $end-$start));
-                        $start = strpos($lines[$i], "x", $end)+1;
+                        $geoX = trim(substr($lines[$i], $start, $end - $start));
+                        $start = strpos($lines[$i], "x", $end) + 1;
                         $end = strpos($lines[$i], ",", $start);
-                        $geo->y = trim(substr ($lines[$i], $start, $end-$start));
-                        $start = strrpos($lines[$i], "=", $end)+1;
-                        $geo->count = (int)trim(substr ($lines[$i], $start));
+                        $geoY = trim(substr($lines[$i], $start, $end - $start));
+                        $start = strrpos($lines[$i], "=", $end) + 1;
+    
+                        if (!$geo = Geo::findOne(['name' => $geoName])) {
+                            $geo = new Geo([
+                                'name' => $geoName,
+                                'x' => $geoX,
+                                'y' => $geoY,
+                                's' => $nesting->s,
+                            ]);
+                            $geo->save();
+                        }
+                        $geo->count = (int)trim(substr($lines[$i], $start));
                         $geos[] = $geo;
                     }
                     $i++;

@@ -36,7 +36,7 @@ class Geo extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 's', 'category_id'], 'required'],
+            [['name', 's'], 'required'],
             [['entity_id', 'count', 's', 'category_id'], 'integer'],
             [['x', 'y'], 'number'],
             [['name'], 'string', 'max' => 255],

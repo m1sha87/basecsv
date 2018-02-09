@@ -139,8 +139,6 @@ use yii\helpers\Url;
             $('.category.selected').removeClass('selected');
             $(this).addClass('selected');
             $('.category-widget').triggerHandler('afterSelectCategory', $(this));
-//            $('#widgetCategoryField').val($(this).data('id'));
-//            $('#widgetCategoryNameField').val($(this).data('name'));
             if (types)
                 getItems($(this));
         }).on('click', '.item', function () {

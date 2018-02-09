@@ -54,9 +54,9 @@ class NestingController extends Controller
                 $uploadModel->parseJob();
                 if ($nesting = Yii::$app->session->get('nesting')) {
                     if ($result = Nesting::findOne(['name' => $nesting->name])) {
-                        return $this->redirect('nesting/update', ['id' => $result->id]);
+                        return $this->redirect('/nesting/update', ['id' => $result->id]);
                     }
-                    return $this->redirect('nesting/create');
+                    return $this->redirect('/nesting/create');
                 }
             }
         }
@@ -87,8 +87,22 @@ class NestingController extends Controller
      */
     public function actionCreate()
     {
-        $model = new Nesting();
-        $modelsGeos = [new NestingHasGeo()];
+        if (Yii::$app->session->has('nesting')) {
+            $model = Yii::$app->session->get('nesting');
+            Yii::$app->session->remove('nesting');
+        } else
+            $model = new Nesting();
+        if (Yii::$app->session->has('geos')) {
+            $modelsGeos = [];
+            foreach (Yii::$app->session->get('geos') as $geo) {
+                $modelsGeos[] = new NestingHasGeo([
+                    'geo_id' => $geo->id,
+                    'count' => $geo->count,
+                ]);
+            }
+            Yii::$app->session->remove('geos');
+        } else
+            $modelsGeos = [new NestingHasGeo()];
         if ($model->load(Yii::$app->request->post())) {
         
             $modelsGeos = Model::createMultiple(NestingHasGeo::classname());
@@ -205,6 +219,11 @@ class NestingController extends Controller
         $this->findModel($id)->delete();
 
         return $this->redirect(['index']);
+    }
+    
+    public function actionImportNestings()
+    {
+    
     }
 
     /**

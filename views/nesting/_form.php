@@ -78,13 +78,13 @@ use wbraganca\dynamicform\DynamicFormWidget;
         <label for="categoryName">Выбранная категория</label>
         <input type="text" class="form-control" id="categoryName" readonly>
     </div>
- 
+    
     <?php DynamicFormWidget::begin([
         'widgetContainer' => 'dynamicform_wrapper', // required: only alphanumeric characters plus "_" [A-Za-z0-9_]
         'widgetBody' => '.container-items', // required: css class selector
         'widgetItem' => '.geo-item', // required: css class
         'limit' => 999, // the maximum times, an element can be cloned (default 999)
-        'min' => 0, // 0 or 1 (default 1)
+        'min' => $modelsGeos[0]->geo_id ? 1 : 0, // 0 or 1 (default 1)
         'insertButton' => '.add-item', // css class
         'deleteButton' => '.remove-item', // css class
         'model' => $modelsGeos[0],
@@ -178,10 +178,6 @@ use wbraganca\dynamicform\DynamicFormWidget;
         if (!firstClick)
             $('#categorySelect').trigger('click');
         firstClick = true;
-    });
-
-    $('.category-widget').on('afterSelectCategory', function (e, item) {
-        console.log(item);
     });
 
     function refreshAddButtons() {
