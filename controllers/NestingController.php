@@ -24,7 +24,7 @@ use yii\widgets\ActiveForm;
 class NestingController extends Controller
 {
     /**
-     *sudo ln -s /opt/phpstorm/bin/phpstorm.sh /usr/local/bin/phpstorm @inheritdoc
+     * @inheritdoc
      */
     public function behaviors()
     {
@@ -60,7 +60,7 @@ class NestingController extends Controller
                 }
             }
         }
-
+        
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,

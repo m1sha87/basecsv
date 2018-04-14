@@ -23,7 +23,8 @@ $this->params['breadcrumbs'][] = $this->title;
                 'options' => ['enctype' => 'multipart/form-data'],
             ]) ?>
         <?= $form->field($uploadModel, 'jobFile')->fileInput() ?>
-        <button>Submit</button>
+        
+        <?= Html::submitButton('Import', ['class' => 'btn btn-success']) ?>
     
         <?php ActiveForm::end() ?>
     </p>

@@ -156,19 +156,13 @@ use wbraganca\dynamicform\DynamicFormWidget;
     $(".dynamicform_wrapper").on("beforeInsert", function(e, item) {
         tmpId = item.data('id');
         tmpName = item.data('name');
-    });
-
-    $(".dynamicform_wrapper").on("afterInsert", function(e, item) {
+    }).on("afterInsert", function(e, item) {
         $(item).find('.geo-id').val(tmpId);
         $(item).find('.geo-name').text(tmpName);
         refreshAddButtons();
-    });
-
-    $(".dynamicform_wrapper").on("afterDelete", function(e) {
+    }).on("afterDelete", function(e) {
         refreshAddButtons();
-    });
-
-    $(".dynamicform_wrapper").on("limitReached", function(e, item) {
+    }).on("limitReached", function(e, item) {
         alert("Limit reached");
     });
 
